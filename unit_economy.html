@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROCARE · Юнит-экономика</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F7F4;color:#1a1a1a;min-height:100vh;padding:1.5rem}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #c8e6dc;border-radius:14px;padding:12px 18px;margin-bottom:1.25rem;flex-wrap:wrap}
+.logo{width:38px;height:38px;background:#0F6E56;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;text-align:center;line-height:1.2}
+.hdr h1{font-size:20px;font-weight:700;letter-spacing:2px;color:#1a1a1a}
+.hdr p{font-size:11px;color:#888;margin-top:2px}
+.hdr-nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn-nav{font-size:12px;padding:7px 16px;border-radius:8px;background:#edfaf5;color:#0F6E56;border:1px solid #c8e6dc;cursor:pointer;text-decoration:none;display:inline-block;font-weight:500;white-space:nowrap;transition:all .15s}
+.btn-nav:hover{background:#d4f2e7;border-color:#0F6E56}
+
+/* ── LOADING ── */
+.loading{padding:64px;text-align:center;color:#aaa;font-size:13px}
+.loading-spin{display:inline-block;width:28px;height:28px;border:3px solid #c8e6dc;border-top-color:#0F6E56;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SHOP TABS ── */
+.shop-bar{background:#fff;border:1px solid #c8e6dc;border-radius:12px;padding:10px 14px;margin-bottom:.75rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.shop-bar-label{font-size:11px;color:#888;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.shop-tab{font-size:12px;padding:5px 16px;border-radius:20px;border:1px solid #c8e6dc;background:#f5fdf9;color:#555;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.shop-tab:hover:not(.shop-active){border-color:#0F6E56;color:#0F6E56;background:#edfaf5}
+.shop-tab.shop-active{background:#0F6E56;color:#fff;border-color:#0F6E56;font-weight:700}
+.shop-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── DATE BAR ── */
+.date-bar{background:#fff;border:1px solid #c8e6dc;border-radius:12px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dpreset{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid #c8e6dc;background:#f5fdf9;color:#555;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.dpreset:hover:not(.on){border-color:#0F6E56;color:#0F6E56;background:#edfaf5}
+.dpreset.on{background:#0F6E56;color:#fff;border-color:#0F6E56;font-weight:700}
+.dpreset.d-30.on{background:#185FA5;border-color:#185FA5}
+.d-sep{width:1px;height:22px;background:#c8e6dc;flex-shrink:0}
+.date-inputs{display:flex;align-items:center;gap:7px}
+.date-lbl{font-size:11px;color:#aaa;white-space:nowrap}
+.date-inp{font-size:12px;padding:5px 9px;border:1px solid #c8e6dc;border-radius:8px;background:#f5fdf9;color:#1a1a1a;cursor:pointer;outline:none;font-family:inherit;transition:border-color .15s}
+.date-inp:focus{border-color:#0F6E56}
+.date-inp::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
+.date-inp.custom-active{border-color:#0F6E56;background:#edfaf5;color:#0F6E56;font-weight:600}
+.date-arrow{font-size:12px;color:#aaa}
+.date-badge{margin-left:auto;display:flex;align-items:center;gap:6px}
+.d-pill{font-size:10px;padding:3px 9px;border-radius:4px;background:#f0faf6;color:#0F6E56;font-weight:600;white-space:nowrap;border:1px solid #c8e6dc}
+.d-pill.loading-pill{background:#fff8e6;color:#BA7517;border-color:#f0d080;animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:#fff;border:1px solid #c8e6dc;border-radius:12px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fpill{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid #c8e6dc;background:#f5fdf9;color:#555;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap}
+.fpill:hover:not(.active){border-color:#0F6E56;color:#0F6E56;background:#edfaf5}
+.fpill.active{background:#0F6E56;color:#fff;border-color:#0F6E56;font-weight:700}
+.f-sep{width:1px;height:22px;background:#c8e6dc;flex-shrink:0}
+.cat-sel{font-size:12px;padding:5px 10px;border:1px solid #c8e6dc;border-radius:8px;background:#f5fdf9;color:#555;cursor:pointer;outline:none;font-family:inherit;transition:border-color .15s}
+.cat-sel:focus{border-color:#0F6E56}
+.btn-csv{font-size:12px;padding:5px 13px;border-radius:8px;border:1px solid #c8e6dc;background:#edfaf5;color:#0F6E56;cursor:pointer;font-weight:600;font-family:inherit;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;margin-left:auto}
+.btn-csv:hover{background:#0F6E56;color:#fff;border-color:#0F6E56}
+
+/* ── TABLE ── */
+.tbl-wrap{background:#fff;border:1px solid #c8e6dc;border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.tbl-head{display:grid;grid-template-columns:1fr 90px 130px 120px 130px 22px;padding:9px 16px;border-bottom:2px solid #e8f5ef;background:#f5fdf9;align-items:center}
+.tbl-head span{font-size:10px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;user-select:none;white-space:nowrap}
+.tbl-head span:hover{color:#0F6E56}
+.tbl-head span.sorted{color:#0F6E56}
+.tbl-head span:not(:first-child){text-align:right}
+
+.prod-row{display:grid;grid-template-columns:1fr 90px 130px 120px 130px 22px;padding:10px 16px;border-bottom:1px solid #f0faf6;cursor:pointer;transition:background .1s;align-items:center}
+.prod-row:last-child{border-bottom:none}
+.prod-row:hover{background:#f5fdf9}
+.prod-row.sel{background:#edfaf5;border-left:3px solid #0F6E56}
+.pr-name{font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.3}
+.pr-meta{font-size:10px;color:#888;margin-top:3px;line-height:1.8}
+.pr-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:1px 7px;border-radius:3px;margin-bottom:3px;letter-spacing:.2px}
+.b-hit{background:#fff3e0;color:#BA7517;border:1px solid #f0d080}
+.b-winning{background:#e8f5ef;color:#0F6E56;border:1px solid #b2dfcf}
+.b-losing{background:#fdecea;color:#A32D2D;border:1px solid #f5b8b8}
+.b-sleeping{background:#f5f5f5;color:#888;border:1px solid #ddd}
+.b-nocog{background:#f0f4ff;color:#6b7280;border:1px solid #d1d5db}
+.tc{font-size:13px;text-align:right}
+.tc small{display:block;font-size:10px;color:#aaa;margin-top:1px}
+.tc.gr{color:#0F6E56;font-weight:600}
+.tc.rd{color:#A32D2D;font-weight:600}
+.tc.am{color:#BA7517}
+.pbar{width:100%;height:3px;background:#e8f5ef;border-radius:2px;margin-top:4px}
+.pbar-f{height:100%;border-radius:2px}
+.tc-arrow{font-size:12px;color:#c8e6dc;text-align:right;transition:color .1s}
+.prod-row:hover .tc-arrow{color:#0F6E56}
+
+.empty{padding:48px;text-align:center;color:#aaa;font-size:13px}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:1.5rem;flex-wrap:wrap}
+.pg{font-size:12px;padding:6px 11px;border-radius:7px;border:1px solid #c8e6dc;background:#fff;color:#555;cursor:pointer;font-family:inherit;transition:all .15s}
+.pg:hover:not(:disabled):not(.pgon){border-color:#0F6E56;color:#0F6E56;background:#edfaf5}
+.pg.pgon{background:#0F6E56;color:#fff;border-color:#0F6E56;font-weight:700}
+.pg:disabled{color:#c8e6dc;border-color:#e8f5ef;cursor:default;background:#f5fdf9}
+.pg-info{font-size:11px;color:#aaa;padding:0 6px}
+
+/* ── OVERLAY & SIDEBAR ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+.overlay.open{display:block}
+.sidebar{position:fixed;top:0;right:-500px;width:480px;max-width:100vw;height:100vh;background:#fff;border-left:2px solid #c8e6dc;z-index:100;overflow-y:auto;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-6px 0 40px rgba(15,110,86,.08)}
+.sidebar.open{right:0}
+.sb-head{padding:16px 18px 14px;border-bottom:1px solid #e8f5ef;position:sticky;top:0;background:#fff;z-index:1}
+.sb-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;border:1px solid #c8e6dc;background:#f5fdf9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#888;transition:all .15s}
+.sb-close:hover{background:#fdecea;border-color:#A32D2D;color:#A32D2D}
+.sb-name{font-size:18px;font-weight:800;color:#1a1a1a;margin:6px 0 6px;padding-right:36px;line-height:1.3}
+.sb-ids{font-size:11px;color:#888;line-height:2}
+.id-val{font-family:monospace;color:#555;font-size:11px}
+.sb-body{padding:14px 18px}
+
+/* ── METRIC CARDS ── */
+.mc2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.mc{background:#f5fdf9;border:1px solid #c8e6dc;border-radius:10px;padding:12px 14px}
+.mc-l{font-size:10px;color:#888;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.mc-v{font-size:19px;font-weight:800;color:#1a1a1a;line-height:1.1}
+.mc-s{font-size:10px;color:#aaa;margin-top:3px}
+.mc.gr .mc-v{color:#0F6E56}
+.mc.rd .mc-v{color:#A32D2D}
+.mc.am .mc-v{color:#BA7517}
+
+/* ── DISTRIBUTION BAR ── */
+.dist-sec{margin-bottom:4px}
+.dist-lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.dist-bar{height:10px;border-radius:5px;overflow:hidden;display:flex;gap:1px;margin-bottom:10px;background:#e8f5ef}
+.dist-seg{height:100%;transition:width .3s}
+.dist-leg{display:flex;flex-wrap:wrap;gap:8px 14px}
+.dl{display:flex;align-items:center;gap:5px;font-size:10px;color:#888}
+.dl-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.dl-v{font-weight:700;color:#1a1a1a;margin-left:2px}
+
+/* ── SHOP BREAKDOWN in sidebar ── */
+.sb-shop-sec{margin-top:14px;padding-top:12px;border-top:1px solid #e8f5ef}
+.sb-shop-title{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.sb-shop-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0faf6;font-size:12px}
+.sb-shop-row:last-child{border-bottom:none}
+.sb-shop-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-shop-name{font-weight:600;color:#1a1a1a;min-width:80px}
+.sb-shop-val{color:#555;margin-left:auto;text-align:right;white-space:nowrap}
+.sb-shop-val span{display:block;font-size:10px;color:#aaa}
+
+/* ── FOOTER ── */
+.footer{text-align:center;font-size:11px;color:#aaa;margin-top:.5rem;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">PRO<br>CARE</div>
+  <div>
+    <h1>PROCARE · Юнит-экономика</h1>
+    <p id="hdrSub">Юнит-экономика · загрузка…</p>
+  </div>
+  <div class="hdr-nav">
+    <div id="syncArea" style="display:inline-flex;gap:4px;margin-right:8px"></div>
+    <a href="index.html" class="btn-nav">← Главный</a>
+    <a href="analytics.html" class="btn-nav">Аналитика</a>
+    <a href="categories.html" class="btn-nav">Категории</a>
+    <a href="auth.html" class="btn-nav">Авторизация</a>
+  </div>
+</div>
+
+<div id="mainContent">
+  <div class="loading">
+    <div class="loading-spin"></div><br>
+    Загрузка каталога и данных…
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar"></div>
+
+<div class="footer" id="footer">PROCARE · Юнит-экономика</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────
+const PER_PAGE = 50;
+const HIT_TOP_N = 10;
+const BADGE = {hit:'★ Хит', winning:'↑ Выигрывает', losing:'✕ Проигрышный', sleeping:'◎ Спящий', nocog:'◌ Без COG'};
+const BCLS  = {hit:'b-hit', winning:'b-winning', losing:'b-losing', sleeping:'b-sleeping', nocog:'b-nocog'};
+
+// ── Config & multi-shop state ─────────────────────────────────
+let CONFIG      = null;       // loaded from config.json
+let curShop     = 'all';      // 'all' or specific shop name
+let activeShops = [];         // derived from curShop
+
+function getActiveShops() {
+  if (!CONFIG) return [];
+  return curShop === 'all'
+    ? CONFIG.shops.map(s => s.name)
+    : [curShop];
+}
+
+function getShopConfig(name) {
+  return CONFIG ? CONFIG.shops.find(s => s.name === name) : null;
+}
+
+// ── App state ──────────────────────────────────────────────────
+let PRODUCTS    = [];       // [{ean, name, category, offers: {Shop1: id, Shop2: id}}]
+let offerToKey  = {};       // offerId → product key
+let keyToIdx    = {};       // product key → index in PRODUCTS[]
+
+let monthData   = {};       // {ym: {month, days}} — loaded monthly file cache
+let loadingYMs  = new Set();
+let aggCache    = null;     // {key: {sales, revenue, commission, ads, promo}}
+let statusCache = null;     // {key: status_string}
+
+let DATE_MIN = '2026-01-01';
+let DATE_MAX = '2026-04-02';
+
+// UI state
+let curFilter  = 'all';
+let curCat     = '';
+let sortCol    = 'revenue';
+let sortDir    = 'desc';
+let curPage    = 1;
+let selKey     = null;
+let datePreset = 'all';
+let dateFrom   = DATE_MIN;
+let dateTo     = DATE_MAX;
+let dataReady  = false;
+
+// ── Helpers ────────────────────────────────────────────────────
+function zl(n) {
+  return Math.round(Math.abs(n)).toLocaleString('ru-RU') + ' zł';
+}
+function fmt2(n) {
+  return (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+}
+function escHtml(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function datesInRange(from, to) {
+  const dates = [];
+  let d = new Date(from);
+  const end = new Date(to);
+  while (d <= end) {
+    dates.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+function monthsInRange(from, to) {
+  const seen = new Set(), result = [];
+  for (const ds of datesInRange(from, to)) {
+    const ym = ds.slice(0, 7);
+    if (!seen.has(ym)) { seen.add(ym); result.push(ym); }
+  }
+  return result;
+}
+function productKey(p) {
+  if (p.ean) return 'ean:' + p.ean;
+  // Use first available offer ID across all shops
+  if (p.offers) {
+    for (const shopName of (CONFIG ? CONFIG.shops.map(s => s.name) : [])) {
+      if (p.offers[shopName]) return 'offer:' + p.offers[shopName];
+    }
+  }
+  return 'offer:' + Math.random();
+}
+function getPeriodDays() {
+  const from = new Date(dateFrom), to = new Date(dateTo);
+  return Math.max(1, Math.round((to - from) / 86400000) + 1);
+}
+
+// ── Data loading ───────────────────────────────────────────────
+async function loadConfig() {
+  const resp = await fetch('config.json?_=' + Date.now());
+  if (!resp.ok) throw new Error('config.json не найден');
+  CONFIG = await resp.json();
+  activeShops = getActiveShops();
+}
+
+async function loadProducts() {
+  const resp = await fetch('products.json?_=' + Date.now());
+  if (!resp.ok) throw new Error('products.json не найден');
+  const data = await resp.json();
+  PRODUCTS = data.products || [];
+
+  offerToKey = {};
+  keyToIdx   = {};
+  PRODUCTS.forEach((p, i) => {
+    const k = productKey(p);
+    keyToIdx[k] = i;
+    for (const shopName of CONFIG.shops.map(s => s.name)) {
+      const oid = p.offers && p.offers[shopName];
+      if (oid) offerToKey[oid] = k;
+    }
+  });
+  return data;
+}
+
+async function loadMonthData(ym) {
+  if (monthData[ym] !== undefined || loadingYMs.has(ym)) return;
+  loadingYMs.add(ym);
+  try {
+    const resp = await fetch(`unit_data/${ym}.json?_=` + Date.now());
+    monthData[ym] = resp.ok ? await resp.json() : {month: ym, days: {}};
+  } catch(e) {
+    monthData[ym] = {month: ym, days: {}};
+  } finally {
+    loadingYMs.delete(ym);
+  }
+}
+
+async function ensureMonthsLoaded(from, to) {
+  const yms = monthsInRange(from, to);
+  await Promise.all(yms.map(ym => loadMonthData(ym)));
+}
+
+// ── Aggregation engine ─────────────────────────────────────────
+// vals[0]=qty, vals[1]=revenue, vals[2]=commission, vals[3]=ads, vals[4]=promo
+function buildAggCache(from, to) {
+  const agg = {};
+
+  for (const date of datesInRange(from, to)) {
+    const ym = date.slice(0, 7);
+    const md = monthData[ym];
+    if (!md) continue;
+    const dayEntry = md.days && md.days[date];
+    if (!dayEntry) continue;
+
+    for (const shopName of activeShops) {
+      if (!dayEntry[shopName]) continue;
+      for (const [oid, vals] of Object.entries(dayEntry[shopName])) {
+        const key = offerToKey[oid];
+        if (!key) continue;
+        if (!agg[key]) agg[key] = {sales: 0, revenue: 0, commission: 0, ads: 0, promo: 0};
+        const a = agg[key];
+        a.sales      += vals[0] || 0;
+        a.revenue    += vals[1] || 0;
+        a.commission += vals[2] || 0;
+        a.ads        += vals[3] || 0;
+        a.promo      += vals[4] || 0;
+      }
+    }
+  }
+
+  // Round
+  for (const a of Object.values(agg)) {
+    a.revenue    = Math.round(a.revenue    * 100) / 100;
+    a.commission = Math.round(a.commission * 100) / 100;
+    a.ads        = Math.round(a.ads        * 100) / 100;
+    a.promo      = Math.round(a.promo      * 100) / 100;
+  }
+  aggCache = agg;
+}
+
+// Build per-shop aggregation for a single product key (used in sidebar)
+function buildPerShopAgg(key, from, to) {
+  const result = {};
+  for (const shopCfg of CONFIG.shops) {
+    const shopName = shopCfg.name;
+    const a = {sales: 0, revenue: 0, commission: 0, ads: 0, promo: 0};
+    for (const date of datesInRange(from, to)) {
+      const ym = date.slice(0, 7);
+      const md = monthData[ym];
+      if (!md) continue;
+      const dayEntry = md.days && md.days[date];
+      if (!dayEntry || !dayEntry[shopName]) continue;
+      for (const [oid, vals] of Object.entries(dayEntry[shopName])) {
+        if (offerToKey[oid] !== key) continue;
+        a.sales      += vals[0] || 0;
+        a.revenue    += vals[1] || 0;
+        a.commission += vals[2] || 0;
+        a.ads        += vals[3] || 0;
+        a.promo      += vals[4] || 0;
+      }
+    }
+    a.revenue    = Math.round(a.revenue    * 100) / 100;
+    a.commission = Math.round(a.commission * 100) / 100;
+    a.ads        = Math.round(a.ads        * 100) / 100;
+    a.promo      = Math.round(a.promo      * 100) / 100;
+    if (a.sales > 0 || a.revenue > 0) result[shopName] = a;
+  }
+  return result;
+}
+
+// ── Per-product data getters ───────────────────────────────────
+function getProductData(p) {
+  const key = productKey(p);
+  if (!aggCache || !aggCache[key]) return null;
+  const a = aggCache[key];
+  return (a.sales > 0 || a.revenue > 0) ? {...a} : null;
+}
+
+function getCog(p) {
+  // Returns COG per unit (PLN) or null if not set
+  if (!p || !p.cog) return null;
+
+  if (curShop === 'all') {
+    // Average of all non-null COGs across shops, or first available
+    const vals = [];
+    for (const shopName of CONFIG.shops.map(s => s.name)) {
+      if (p.cog[shopName] != null) vals.push(p.cog[shopName]);
+    }
+    if (vals.length === 0) return null;
+    return vals.reduce((s, v) => s + v, 0) / vals.length;
+  }
+
+  return p.cog[curShop] != null ? p.cog[curShop] : null;
+}
+function hasCog(p) {
+  return getCog(p) !== null;
+}
+function margin(d, p) {
+  if (!d) return 0;
+  const cogUnit = p ? getCog(p) : null;
+  const cogTotal = (cogUnit !== null && d.sales > 0) ? cogUnit * d.sales : 0;
+  return d.revenue - d.commission - d.ads - d.promo - cogTotal;
+}
+function marginPct(d, p) {
+  return (d && d.revenue > 0) ? margin(d, p) / d.revenue * 100 : 0;
+}
+
+// Get COG for a specific shop (used in sidebar per-shop breakdown)
+function getCogForShop(p, shopName) {
+  if (!p || !p.cog) return null;
+  return p.cog[shopName] != null ? p.cog[shopName] : null;
+}
+
+// ── Status calculation ─────────────────────────────────────────
+function buildStatusCache() {
+  // Hits = top HIT_TOP_N by sales among products WITH COG and positive margin
+  const salesList = PRODUCTS.map(p => {
+    const key = productKey(p);
+    const a = aggCache && aggCache[key];
+    return {key, p, sales: a ? a.sales : 0, d: a ? {...a} : null};
+  }).sort((a, b) => b.sales - a.sales);
+
+  const hitKeys = new Set();
+  let hitCount = 0;
+  for (const item of salesList) {
+    if (hitCount >= HIT_TOP_N) break;
+    // Only COG products with positive margin qualify as hits
+    if (item.sales > 0 && hasCog(item.p) && marginPct(item.d, item.p) >= 0) {
+      hitKeys.add(item.key);
+      hitCount++;
+    }
+  }
+
+  statusCache = {};
+  for (const p of PRODUCTS) {
+    const key = productKey(p);
+
+    // Products without COG → nocog (same as POLAX)
+    if (!hasCog(p)) { statusCache[key] = 'nocog'; continue; }
+
+    const d = getProductData(p);
+    if (!d || d.sales === 0) { statusCache[key] = 'sleeping'; continue; }
+    if (marginPct(d, p) < 0) { statusCache[key] = 'losing';   continue; }
+    statusCache[key] = hitKeys.has(key) ? 'hit' : 'winning';
+  }
+}
+
+function getStatus(p) {
+  return (statusCache && statusCache[productKey(p)]) || 'sleeping';
+}
+
+// ── Refresh on period/shop change ─────────────────────────────
+async function refresh() {
+  if (!dataReady) return;
+  activeShops = getActiveShops();
+  aggCache    = null;
+  statusCache = null;
+  showLoadingPill(true);
+  await ensureMonthsLoaded(dateFrom, dateTo);
+  showLoadingPill(false);
+  buildAggCache(dateFrom, dateTo);
+  buildStatusCache();
+  curPage = 1;
+  renderAll();
+}
+
+function showLoadingPill(on) {
+  const el = document.getElementById('loadPill');
+  if (el) el.style.display = on ? '' : 'none';
+}
+
+// ── Filtering & sorting ────────────────────────────────────────
+function getCounts() {
+  const r = {all: 0, hit: 0, winning: 0, losing: 0, sleeping: 0, nocog: 0};
+  PRODUCTS.forEach(p => {
+    if (curCat && p.category !== curCat) return;
+    r.all++;
+    const st = getStatus(p);
+    if (r[st] !== undefined) r[st]++;
+    // "winning" filter includes hits (all profitable products)
+    if (st === 'hit') r.winning++;
+  });
+  return r;
+}
+
+function getCategories() {
+  return [...new Set(PRODUCTS.map(p => p.category).filter(Boolean))].sort();
+}
+
+function filteredProducts() {
+  return PRODUCTS.filter(p => {
+    if (curCat && p.category !== curCat) return false;
+    if (curFilter !== 'all') {
+      const st = getStatus(p);
+      // "winning" filter shows all profitable products (hit + winning)
+      if (curFilter === 'winning') {
+        if (st !== 'winning' && st !== 'hit') return false;
+      } else {
+        if (st !== curFilter) return false;
+      }
+    }
+    return true;
+  });
+}
+
+function sortedProducts(arr) {
+  return [...arr].sort((a, b) => {
+    const da = getProductData(a) || {sales: 0, revenue: 0, commission: 0, ads: 0, promo: 0};
+    const db = getProductData(b) || {sales: 0, revenue: 0, commission: 0, ads: 0, promo: 0};
+    let va, vb;
+    if      (sortCol === 'sales')      { va = da.sales;       vb = db.sales; }
+    else if (sortCol === 'revenue')    { va = da.revenue;     vb = db.revenue; }
+    else if (sortCol === 'commission') { va = da.commission;  vb = db.commission; }
+    else if (sortCol === 'margin')     { va = margin(da);     vb = margin(db); }
+    else if (sortCol === 'marginPct')  { va = marginPct(da);  vb = marginPct(db); }
+    else                               { va = da.revenue;     vb = db.revenue; }
+    return sortDir === 'desc' ? vb - va : va - vb;
+  });
+}
+
+// ── Render all ─────────────────────────────────────────────────
+function renderAll() {
+  renderShopBar();
+  renderDateBar();
+  renderFilterBar();
+  renderTable();
+}
+
+// ── Shop tabs bar ─────────────────────────────────────────────
+function renderShopBar() {
+  const el = document.getElementById('shopBar');
+  if (!el) return;
+
+  let html = '<span class="shop-bar-label">МАГАЗИН:</span>';
+  html += `<button class="shop-tab${curShop === 'all' ? ' shop-active' : ''}" onclick="setShop('all')">Все</button>`;
+  for (const shop of CONFIG.shops) {
+    const isActive = curShop === shop.name;
+    html += `<button class="shop-tab${isActive ? ' shop-active' : ''}" onclick="setShop('${escHtml(shop.name)}')" style="${isActive ? 'background:' + shop.color + ';border-color:' + shop.color : ''}">`;
+    html += `<span class="shop-dot" style="background:${shop.color}"></span>${escHtml(shop.name)}</button>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── Date bar ───────────────────────────────────────────────────
+function renderDateBar() {
+  const days = getPeriodDays();
+  const fmt  = s => s.split('-').reverse().join('.');
+  const periodLabel = datePreset === 'all'
+    ? `Весь период · ${days} дн.`
+    : datePreset === 'last30'
+    ? `Последние 30 дней · ${days} дн.`
+    : `${fmt(dateFrom)} — ${fmt(dateTo)} · ${days} дн.`;
+
+  document.getElementById('dateBar').innerHTML = `
+    <span style="font-size:11px;color:#888;font-weight:600;letter-spacing:.3px">ПЕРИОД:</span>
+    <button class="dpreset${datePreset === 'all' ? ' on' : ''}" onclick="setDatePreset('all')">Все время</button>
+    <button class="dpreset d-30${datePreset === 'last30' ? ' on' : ''}" onclick="setDatePreset('last30')">Последние 30 дней</button>
+    <div class="d-sep"></div>
+    <div class="date-inputs">
+      <span class="date-lbl">С</span>
+      <input class="date-inp${datePreset === 'custom' ? ' custom-active' : ''}" type="date" id="dateFromInp"
+        value="${dateFrom}" min="${DATE_MIN}" max="${DATE_MAX}"
+        onchange="setCustomDate('from', this.value)">
+      <span class="date-arrow">→</span>
+      <span class="date-lbl">По</span>
+      <input class="date-inp${datePreset === 'custom' ? ' custom-active' : ''}" type="date" id="dateToInp"
+        value="${dateTo}" min="${DATE_MIN}" max="${DATE_MAX}"
+        onchange="setCustomDate('to', this.value)">
+    </div>
+    <div class="date-badge">
+      <span class="d-pill">${periodLabel}</span>
+      <span class="d-pill loading-pill" id="loadPill" style="display:none">⟳ загрузка…</span>
+    </div>`;
+}
+
+// ── Filter bar ─────────────────────────────────────────────────
+function renderFilterBar() {
+  const c = getCounts();
+  const filters = [
+    {id: 'all',      label: `Все (${c.all})`},
+    {id: 'hit',      label: `★ Хиты (${c.hit})`},
+    {id: 'winning',  label: `↑ Выигрывает (${c.winning})`},
+    {id: 'losing',   label: `✕ Проигрышные (${c.losing})`},
+    {id: 'sleeping', label: `◎ Спящие (${c.sleeping})`},
+    {id: 'nocog',    label: `◌ Без COG (${c.nocog})`},
+  ];
+  const catList = getCategories();
+  const catOpts = `<option value="">Все категории</option>` +
+    catList.map(cat => `<option value="${escHtml(cat)}"${curCat === cat ? ' selected' : ''}>${escHtml(cat)}</option>`).join('');
+
+  const total = filteredProducts().length;
+  document.getElementById('filterBar').innerHTML = `
+    ${filters.map(f =>
+      `<button class="fpill${curFilter === f.id ? ' active' : ''}" onclick="setFilter('${f.id}')">${f.label}</button>`
+    ).join('')}
+    <div class="f-sep"></div>
+    <select class="cat-sel" onchange="setCat(this.value)">${catOpts}</select>
+    <button class="btn-csv" onclick="downloadCSV()" title="Скачать текущую выборку в CSV">⬇ CSV (${total})</button>`;
+}
+
+// ── Table ──────────────────────────────────────────────────────
+function renderTable() {
+  const allFiltered = sortedProducts(filteredProducts());
+  const totalPages  = Math.max(1, Math.ceil(allFiltered.length / PER_PAGE));
+  if (curPage > totalPages) curPage = 1;
+  const page = allFiltered.slice((curPage - 1) * PER_PAGE, curPage * PER_PAGE);
+
+  if (allFiltered.length === 0) {
+    document.getElementById('tblWrap').innerHTML = '<div class="empty">Нет товаров по выбранным фильтрам</div>';
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  const maxRev = Math.max(...allFiltered.map(p => (getProductData(p) || {revenue: 0}).revenue));
+
+  const sortArrow = dir => dir === 'desc' ? ' ↓' : ' ↑';
+  const head = `<div class="tbl-head">
+    <span>Продукт</span>
+    <span class="${sortCol === 'sales' ? 'sorted' : ''}" onclick="setSort('sales')">Продажи${sortCol === 'sales' ? sortArrow(sortDir) : ''}</span>
+    <span class="${sortCol === 'revenue' ? 'sorted' : ''}" onclick="setSort('revenue')">Доход${sortCol === 'revenue' ? sortArrow(sortDir) : ''}</span>
+    <span class="${sortCol === 'commission' ? 'sorted' : ''}" onclick="setSort('commission')">Сборы${sortCol === 'commission' ? sortArrow(sortDir) : ''}</span>
+    <span class="${sortCol === 'margin' || sortCol === 'marginPct' ? 'sorted' : ''}" onclick="setSort('marginPct')">Маржа${sortCol === 'margin' || sortCol === 'marginPct' ? sortArrow(sortDir) : ''}</span>
+    <span></span>
+  </div>`;
+
+  const rows = page.map(p => {
+    const key = productKey(p);
+    const d   = getProductData(p);
+    const st  = getStatus(p);
+
+    // Show offer IDs for active shops
+    const offerIds = activeShops.map(s => p.offers && p.offers[s]).filter(Boolean);
+    const oidDisplay = offerIds.length > 0 ? '…' + offerIds[0].slice(-5) : '—';
+    const metaBase = `ID: <span class="id-val">${oidDisplay}</span> · EAN: <span class="id-val">${escHtml(p.ean || '—')}</span>`;
+    const catTag = p.category ? ` · <span style="color:#0F6E56;font-weight:600">${escHtml(p.category)}</span>` : '';
+
+    if (!d) {
+      return `<div class="prod-row${selKey === key ? ' sel' : ''}" onclick="openSidebar('${escHtml(key)}')">
+        <div>
+          <div class="pr-badge ${BCLS[st]}">${BADGE[st]}</div>
+          <div class="pr-name">${escHtml(p.name)}</div>
+          <div class="pr-meta">${metaBase}${catTag}</div>
+        </div>
+        <div class="tc" style="color:#c8e6dc">0 шт.</div>
+        <div class="tc" style="color:#c8e6dc">—</div>
+        <div class="tc" style="color:#c8e6dc">—</div>
+        <div class="tc" style="color:#c8e6dc">—</div>
+        <div class="tc-arrow">›</div>
+      </div>`;
+    }
+
+    const cogUnit = getCog(p);
+    const m   = margin(d, p);
+    const mp  = marginPct(d, p);
+    const barW = maxRev > 0 ? Math.round(d.revenue / maxRev * 100) : 0;
+    const barC = mp >= 35 ? '#0F6E56' : mp >= 15 ? '#BA7517' : mp >= 0 ? '#e5a43a' : '#A32D2D';
+    const cogTag = cogUnit !== null ? ` · <span style="color:#888">COG: <b>${fmt2(cogUnit)} zł</b></span>` : ` · <span style="color:#c8e6dc;font-size:9px">без COG</span>`;
+    const avgPrice = d.sales > 0 ? ` · 🏷 <span style="color:#0F6E56;font-weight:700">${fmt2(d.revenue / d.sales)} zł</span>` : '';
+
+    return `<div class="prod-row${selKey === key ? ' sel' : ''}" onclick="openSidebar('${escHtml(key)}')">
+      <div>
+        <div class="pr-badge ${BCLS[st]}">${BADGE[st]}</div>
+        <div class="pr-name">${escHtml(p.name)}</div>
+        <div class="pr-meta">${metaBase}${catTag}${avgPrice}${cogTag}</div>
+      </div>
+      <div class="tc">${d.sales} шт.</div>
+      <div class="tc am">${zl(d.revenue)}
+        <div class="pbar"><div class="pbar-f" style="width:${barW}%;background:${barC}"></div></div>
+      </div>
+      <div class="tc rd">−${zl(d.commission)}<small>${d.revenue > 0 ? (d.commission / d.revenue * 100).toFixed(1) : 0}%</small></div>
+      <div class="tc ${m >= 0 ? 'gr' : 'rd'}">${m >= 0 ? '' : '−'}${zl(m)}<small>${mp.toFixed(1)}%</small></div>
+      <div class="tc-arrow">›</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tblWrap').innerHTML = head + rows;
+  renderPagination(totalPages, allFiltered.length);
+}
+
+// ── Pagination ─────────────────────────────────────────────────
+function renderPagination(totalPages, total) {
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) {
+    el.innerHTML = `<span class="pg-info">${total} товаров</span>`;
+    return;
+  }
+  let html = `<button class="pg" onclick="goPage(${curPage - 1})" ${curPage === 1 ? 'disabled' : ''}>‹</button>`;
+  const start = Math.max(1, curPage - 2), end = Math.min(totalPages, curPage + 2);
+  if (start > 1) html += `<button class="pg" onclick="goPage(1)">1</button>${start > 2 ? '<span class="pg-info">…</span>' : ''}`;
+  for (let i = start; i <= end; i++) html += `<button class="pg${i === curPage ? ' pgon' : ''}" onclick="goPage(${i})">${i}</button>`;
+  if (end < totalPages) html += `${end < totalPages - 1 ? '<span class="pg-info">…</span>' : ''}<button class="pg" onclick="goPage(${totalPages})">${totalPages}</button>`;
+  html += `<button class="pg" onclick="goPage(${curPage + 1})" ${curPage === totalPages ? 'disabled' : ''}>›</button>`;
+  html += `<span class="pg-info">${total} товаров · стр. ${curPage} из ${totalPages}</span>`;
+  el.innerHTML = html;
+}
+
+// ── Sidebar ────────────────────────────────────────────────────
+function openSidebar(key) {
+  const idx = keyToIdx[key];
+  if (idx === undefined) return;
+  const p  = PRODUCTS[idx];
+  const d  = getProductData(p);
+  const st = getStatus(p);
+  selKey   = key;
+
+  const m  = d ? margin(d, p)    : 0;
+  const mp = d ? marginPct(d, p) : 0;
+
+  // Show all offer IDs across shops
+  let idsHtml = '';
+  for (const shop of CONFIG.shops) {
+    const oid = p.offers && p.offers[shop.name];
+    if (oid) {
+      idsHtml += `<span style="color:${shop.color};font-weight:600">${escHtml(shop.name)}</span> ID: <span class="id-val">${escHtml(oid)}</span> · `;
+    }
+  }
+  if (!idsHtml) idsHtml = 'Offer ID: <span class="id-val">—</span> · ';
+
+  let metricsHtml = '', distHtml = '', shopBreakdownHtml = '';
+
+  if (d) {
+    const cogUnit  = getCog(p);
+    const cogTotal = (cogUnit !== null && d.sales > 0) ? cogUnit * d.sales : 0;
+    const feePct   = d.revenue > 0 ? d.commission / d.revenue * 100 : 0;
+    const adsPct   = d.revenue > 0 ? d.ads        / d.revenue * 100 : 0;
+    const promoPct = d.revenue > 0 ? d.promo      / d.revenue * 100 : 0;
+    const cogPct   = d.revenue > 0 && cogTotal > 0 ? cogTotal / d.revenue * 100 : 0;
+    const mgPct    = Math.max(0, mp);
+    const roas     = (d.ads + d.promo) > 0 ? (d.revenue / (d.ads + d.promo)).toFixed(1) : '—';
+    const avgPrice = d.sales > 0 ? fmt2(d.revenue / d.sales) + ' zł' : '—';
+
+    const cogCard = cogUnit !== null
+      ? `<div class="mc" style="border-color:#60a5fa;background:#eff6ff">
+          <div class="mc-l" style="color:#1d4ed8">Себестоимость (COG)</div>
+          <div class="mc-v" style="color:#1d4ed8">−${zl(cogTotal)}</div>
+          <div class="mc-s">${fmt2(cogUnit)} zł × ${d.sales} шт. · ${cogPct.toFixed(1)}% от выручки</div>
+        </div>`
+      : `<div class="mc" style="border-color:#e0e0e0;background:#fafafa">
+          <div class="mc-l" style="color:#aaa">Себестоимость (COG)</div>
+          <div class="mc-v" style="color:#ccc">—</div>
+          <div class="mc-s" style="color:#ccc">COG не задан</div>
+        </div>`;
+
+    metricsHtml = `
+    <div class="mc2">
+      <div class="mc am">
+        <div class="mc-l">Доход</div>
+        <div class="mc-v">${zl(d.revenue)}</div>
+        <div class="mc-s">${d.sales} транзакций · ср. ${avgPrice}</div>
+      </div>
+      <div class="mc ${m >= 0 ? 'gr' : 'rd'}">
+        <div class="mc-l">Чистая маржа</div>
+        <div class="mc-v">${m >= 0 ? '' : '−'}${zl(Math.abs(m))}</div>
+        <div class="mc-s">${mp.toFixed(1)}% от выручки${cogUnit === null ? ' (без COG)' : ''}</div>
+      </div>
+      <div class="mc rd">
+        <div class="mc-l">Комиссия Allegro</div>
+        <div class="mc-v">−${zl(d.commission)}</div>
+        <div class="mc-s">${feePct.toFixed(1)}% от выручки</div>
+      </div>
+      <div class="mc am">
+        <div class="mc-l">ROAS</div>
+        <div class="mc-v">${roas}</div>
+        <div class="mc-s">${zl(d.ads + d.promo)} реклама+промо</div>
+      </div>
+      <div class="mc" style="border-color:#f0d080;background:#fffdf5">
+        <div class="mc-l" style="color:#BA7517">Реклама CPC</div>
+        <div class="mc-v" style="color:#BA7517">−${zl(d.ads)}</div>
+        <div class="mc-s">${adsPct.toFixed(1)}% от выручки</div>
+      </div>
+      <div class="mc" style="border-color:#d8b4fe;background:#faf5ff">
+        <div class="mc-l" style="color:#7C3AED">Промование</div>
+        <div class="mc-v" style="color:#7C3AED">−${zl(d.promo)}</div>
+        <div class="mc-s">${promoPct.toFixed(1)}% от выручки</div>
+      </div>
+      ${cogCard}
+    </div>`;
+
+    // Distribution bar
+    const total = feePct + adsPct + promoPct + cogPct + mgPct;
+    const w = v => total > 0 ? Math.round(v / total * 100) + '%' : '0%';
+    distHtml = `
+    <div class="dist-sec">
+      <div class="dist-lbl">Распределение выручки</div>
+      <div class="dist-bar">
+        <div class="dist-seg" style="width:${w(feePct)};background:#A32D2D;border-radius:5px 0 0 5px"></div>
+        <div class="dist-seg" style="width:${w(adsPct)};background:#BA7517"></div>
+        <div class="dist-seg" style="width:${w(promoPct)};background:#7C3AED"></div>
+        ${cogPct > 0 ? `<div class="dist-seg" style="width:${w(cogPct)};background:#1d4ed8"></div>` : ''}
+        <div class="dist-seg" style="width:${w(mgPct)};background:#0F6E56;border-radius:0 5px 5px 0"></div>
+      </div>
+      <div class="dist-leg">
+        <div class="dl"><div class="dl-dot" style="background:#A32D2D"></div>Комиссия Allegro<span class="dl-v">${feePct.toFixed(0)}%</span></div>
+        <div class="dl"><div class="dl-dot" style="background:#BA7517"></div>Реклама CPC<span class="dl-v">${adsPct.toFixed(0)}%</span></div>
+        <div class="dl"><div class="dl-dot" style="background:#7C3AED"></div>Промование<span class="dl-v">${promoPct.toFixed(0)}%</span></div>
+        ${cogPct > 0 ? `<div class="dl"><div class="dl-dot" style="background:#1d4ed8"></div>Себестоимость<span class="dl-v">${cogPct.toFixed(0)}%</span></div>` : ''}
+        <div class="dl"><div class="dl-dot" style="background:#0F6E56"></div>Маржа<span class="dl-v">${mgPct.toFixed(0)}%</span></div>
+      </div>
+    </div>`;
+
+    // Per-shop breakdown (only when multiple shops exist)
+    if (CONFIG.shops.length > 1) {
+      const perShop = buildPerShopAgg(key, dateFrom, dateTo);
+      const shopNames = CONFIG.shops.map(s => s.name).filter(s => perShop[s]);
+      if (shopNames.length > 0) {
+        let shopRows = '';
+        for (const sn of shopNames) {
+          const sc = getShopConfig(sn);
+          const sd = perShop[sn];
+          const sCog = getCogForShop(p, sn);
+          const sCogTotal = (sCog !== null && sd.sales > 0) ? sCog * sd.sales : 0;
+          const sMargin = sd.revenue - sd.commission - sd.ads - sd.promo - sCogTotal;
+          const sMarginPct = sd.revenue > 0 ? (sMargin / sd.revenue * 100).toFixed(1) : '0.0';
+          shopRows += `
+            <div class="sb-shop-row">
+              <span class="sb-shop-dot" style="background:${sc ? sc.color : '#888'}"></span>
+              <span class="sb-shop-name">${escHtml(sn)}</span>
+              <span class="sb-shop-val">${sd.sales} шт.<span>продажи</span></span>
+              <span class="sb-shop-val">${zl(sd.revenue)}<span>доход</span></span>
+              <span class="sb-shop-val" style="color:${sMargin >= 0 ? '#0F6E56' : '#A32D2D'};font-weight:600">${sMargin >= 0 ? '' : '−'}${zl(Math.abs(sMargin))}<span>${sMarginPct}%</span></span>
+            </div>`;
+        }
+        shopBreakdownHtml = `
+          <div class="sb-shop-sec">
+            <div class="sb-shop-title">По магазинам</div>
+            ${shopRows}
+          </div>`;
+      }
+    }
+  } else {
+    metricsHtml = `<div style="padding:20px;text-align:center;color:#aaa;font-size:13px">Нет данных за выбранный период</div>`;
+  }
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sb-head">
+      <button class="sb-close" onclick="closeSidebar()">✕</button>
+      <div class="pr-badge ${BCLS[st]}" style="margin-top:4px">${BADGE[st]}</div>
+      <div class="sb-name">${escHtml(p.name)}</div>
+      <div class="sb-ids">${idsHtml}
+        EAN: <span class="id-val">${escHtml(p.ean || '—')}</span>
+        ${p.category ? ` · <span style="color:#0F6E56;font-weight:600">${escHtml(p.category)}</span>` : ''}
+      </div>
+    </div>
+    <div class="sb-body">
+      ${metricsHtml}
+      ${distHtml}
+      ${shopBreakdownHtml}
+    </div>`;
+
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  renderTable(); // update row highlight
+}
+
+function closeSidebar() {
+  selKey = null;
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  renderTable();
+}
+
+// ── Event handlers ─────────────────────────────────────────────
+function setFilter(f) { curFilter = f; curPage = 1; renderAll(); }
+function setCat(c)    { curCat = c;    curPage = 1; renderAll(); }
+function goPage(n)    { curPage = n;   renderAll(); }
+
+function setShop(s) {
+  curShop = s;
+  refresh();
+}
+
+function setSort(col) {
+  if (sortCol === col) { sortDir = sortDir === 'desc' ? 'asc' : 'desc'; }
+  else { sortCol = col; sortDir = 'desc'; }
+  curPage = 1;
+  renderAll();
+}
+
+function setDatePreset(p) {
+  datePreset = p;
+  if (p === 'all') {
+    dateFrom = DATE_MIN;
+    dateTo   = DATE_MAX;
+  } else if (p === 'last30') {
+    const to   = new Date(DATE_MAX);
+    const from = new Date(to);
+    from.setDate(from.getDate() - 29);
+    dateFrom = from.toISOString().slice(0, 10);
+    dateTo   = DATE_MAX;
+  }
+  refresh();
+}
+
+function setCustomDate(which, val) {
+  datePreset = 'custom';
+  if (which === 'from') dateFrom = val;
+  else                  dateTo   = val;
+  if (dateFrom > dateTo) { if (which === 'from') dateTo = dateFrom; else dateFrom = dateTo; }
+  refresh();
+}
+
+// ── CSV Export ─────────────────────────────────────────────────
+function downloadCSV() {
+  const products = sortedProducts(filteredProducts());
+
+  const filterLabel = {all: 'Все', hit: 'Хиты', winning: 'Выигрывает', losing: 'Проигрышные', sleeping: 'Спящие', nocog: 'БезCOG'}[curFilter] || curFilter;
+  const shopLabel = curShop === 'all' ? 'Все' : curShop;
+  const periodLabel = datePreset === 'all' ? 'все_время' : datePreset === 'last30' ? 'посл_30дн' : `${dateFrom}_${dateTo}`;
+  const filename = `unit_economy_${shopLabel}_${filterLabel}_${periodLabel}.csv`;
+
+  const headers = ['Название', 'EAN', 'Категория', 'Магазин(ы)', 'Offer ID(s)', 'Статус',
+    'Продажи (шт)', 'Доход (zł)', 'Комиссия (zł)', 'Реклама (zł)', 'Промо (zł)',
+    'COG за шт (zł)', 'COG итого (zł)', 'Маржа (zł)', 'Маржа (%)'];
+
+  const statusLabels = {hit: 'Хит', winning: 'Выигрывает', losing: 'Проигрышный', sleeping: 'Спящий', nocog: 'Без COG'};
+  const csvCell = v => {
+    const s = String(v == null ? '' : v).replace(/"/g, '""');
+    return /[,"\n\r]/.test(s) ? `"${s}"` : s;
+  };
+
+  const rows = [headers.map(csvCell).join(',')];
+  for (const p of products) {
+    const d  = getProductData(p);
+    const st = getStatus(p);
+    const shopNames = activeShops.filter(s => p.offers && p.offers[s]).join('; ');
+    const oids = activeShops.map(s => p.offers && p.offers[s]).filter(Boolean).join('; ');
+
+    const row = [p.name || '', p.ean || '', p.category || '', shopNames, oids, statusLabels[st] || st];
+    const cogUnit = getCog(p);
+    if (d) {
+      const cogTotal = (cogUnit !== null && d.sales > 0) ? Math.round(cogUnit * d.sales * 100) / 100 : '';
+      const m  = Math.round(margin(d, p)    * 100) / 100;
+      const mp = Math.round(marginPct(d, p) * 10)  / 10;
+      row.push(d.sales, d.revenue, d.commission, d.ads, d.promo,
+               cogUnit !== null ? cogUnit : '', cogTotal, m, mp);
+    } else {
+      row.push(0, '', '', '', '', cogUnit !== null ? cogUnit : '', '', '', '');
+    }
+    rows.push(row.map(csvCell).join(','));
+  }
+
+  const blob = new Blob(['\ufeff' + rows.join('\r\n')], {type: 'text/csv;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Bootstrap ──────────────────────────────────────────────────
+async function init() {
+  try {
+    await loadConfig();
+    activeShops = getActiveShops();
+
+    const catalog = await loadProducts();
+
+    DATE_MIN = catalog.date_min || '2026-01-01';
+    DATE_MAX = catalog.date_max || new Date().toISOString().slice(0, 10);
+    dateFrom = DATE_MIN;
+    dateTo   = DATE_MAX;
+
+    const shopNames = CONFIG.shops.map(s => s.name).join(' + ');
+
+    document.getElementById('mainContent').innerHTML = `
+      <div class="shop-bar"   id="shopBar"></div>
+      <div class="date-bar"   id="dateBar"></div>
+      <div class="filter-bar" id="filterBar"></div>
+      <div class="tbl-wrap"   id="tblWrap">
+        <div class="loading"><div class="loading-spin"></div><br>Загрузка данных…</div>
+      </div>
+      <div class="pagination" id="pagination"></div>`;
+
+    document.getElementById('hdrSub').textContent =
+      `Юнит-экономика · ${shopNames} · ${PRODUCTS.length} товаров · обновлено ${catalog.updated || '—'}`;
+    document.getElementById('footer').textContent =
+      `PROCARE · Юнит-экономика · ${PRODUCTS.length} товаров`;
+
+    dataReady = true;
+
+    await ensureMonthsLoaded(dateFrom, dateTo);
+    buildAggCache(dateFrom, dateTo);
+    buildStatusCache();
+    renderAll();
+
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML = `
+      <div style="padding:48px;text-align:center;font-size:13px">
+        <div style="font-size:28px;margin-bottom:12px">⚠</div>
+        <strong style="color:#A32D2D">Ошибка загрузки данных</strong><br><br>
+        <span style="color:#888">Убедитесь что <code>config.json</code> и <code>products.json</code> существуют.<br>
+        Запустите <code>fetch_offers.yml</code> для загрузки каталога.</span><br><br>
+        <code style="font-size:10px;color:#aaa">${escHtml(e.message)}</code>
+      </div>`;
+    console.error('init error:', e);
+  }
+}
+
+init();
+</script>
+<script src="sync.js"></script>
+</body>
+</html>

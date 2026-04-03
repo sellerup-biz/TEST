@@ -1,0 +1,53 @@
+name: Fetch Recent Days
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Количество последних дней для сбора'
+        required: true
+        default: '30'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-recent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install requests PyNaCl
+      - name: Collect recent daily data
+        run: python fetch_recent.py
+        env:
+          RECENT_DAYS:            ${{ github.event.inputs.days }}
+          GH_TOKEN:               ${{ secrets.GH_TOKEN }}
+          CLIENT_ID_PROCARE:      ${{ secrets.CLIENT_ID_PROCARE }}
+          CLIENT_SECRET_PROCARE:  ${{ secrets.CLIENT_SECRET_PROCARE }}
+          REFRESH_TOKEN_PROCARE:  ${{ secrets.REFRESH_TOKEN_PROCARE }}
+          CLIENT_ID_SHOP2:        ${{ secrets.CLIENT_ID_SHOP2 }}
+          CLIENT_SECRET_SHOP2:    ${{ secrets.CLIENT_SECRET_SHOP2 }}
+          REFRESH_TOKEN_SHOP2:    ${{ secrets.REFRESH_TOKEN_SHOP2 }}
+          CLIENT_ID_SHOP3:        ${{ secrets.CLIENT_ID_SHOP3 }}
+          CLIENT_SECRET_SHOP3:    ${{ secrets.CLIENT_SECRET_SHOP3 }}
+          REFRESH_TOKEN_SHOP3:    ${{ secrets.REFRESH_TOKEN_SHOP3 }}
+          CLIENT_ID_SHOP4:        ${{ secrets.CLIENT_ID_SHOP4 }}
+          CLIENT_SECRET_SHOP4:    ${{ secrets.CLIENT_SECRET_SHOP4 }}
+          REFRESH_TOKEN_SHOP4:    ${{ secrets.REFRESH_TOKEN_SHOP4 }}
+          CLIENT_ID_SHOP5:        ${{ secrets.CLIENT_ID_SHOP5 }}
+          CLIENT_SECRET_SHOP5:    ${{ secrets.CLIENT_SECRET_SHOP5 }}
+          REFRESH_TOKEN_SHOP5:    ${{ secrets.REFRESH_TOKEN_SHOP5 }}
+      - name: Commit data.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "bot@procare"
+          git add data.json
+          git diff --staged --quiet || git commit -m "Recent ${{ github.event.inputs.days }} days data $(date +'%Y-%m-%d')"
+          git pull --rebase origin main
+          git push
