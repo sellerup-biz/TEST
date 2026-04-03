@@ -3,97 +3,346 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PROCARE · Авторизация Allegro</title>
+<title>TEST · Настройка и авторизация</title>
+<script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers-sumo@0.7.15/dist/modules-sumo/sodium-sumo.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background: #F0F7F4; min-height: 100vh; padding: 2rem; color: #333; }
-  .container { max-width: 520px; margin: 0 auto; }
+         background: #F0F7F4; min-height: 100vh; padding: 1.5rem; color: #333; }
+  .container { max-width: 620px; margin: 0 auto; }
   h1 { font-size: 1.4rem; font-weight: 700; color: #0F6E56; margin-bottom: 0.25rem; }
-  .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 2rem; }
+  .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 1.5rem; }
   .card { background: #fff; border: 1px solid #c8e6dc; border-radius: 12px;
-          padding: 1.5rem; margin-bottom: 1rem; }
-  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-  .card p { font-size: 0.85rem; color: #666; margin-bottom: 1rem; line-height: 1.5; }
-  .btn { display: block; width: 100%; padding: 0.75rem 1rem; border: none;
-         border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
-         text-decoration: none; text-align: center; color: #fff; transition: opacity 0.2s; }
+          padding: 1.25rem; margin-bottom: 1rem; }
+  .card h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .card p { font-size: 0.82rem; color: #666; margin-bottom: 0.75rem; line-height: 1.5; }
+  .btn { display: inline-block; padding: 0.6rem 1.2rem; border: none;
+         border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+         color: #fff; transition: opacity 0.2s; }
   .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-block { display: block; width: 100%; text-align: center; }
   .notice { background: #edfaf5; border: 1px solid #0F6E56; border-radius: 10px;
-            padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.85rem;
+            padding: 0.9rem 1.1rem; margin-bottom: 1.25rem; font-size: 0.82rem;
             color: #085041; line-height: 1.6; }
   .notice b { color: #0F6E56; }
   .step { display: inline-flex; align-items: center; justify-content: center;
-          width: 22px; height: 22px; border-radius: 50%; background: #0F6E56;
-          color: #fff; font-size: 0.75rem; font-weight: 700; margin-right: 0.5rem; }
-  .token-input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #c8e6dc;
-                 border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem;
-                 font-family: monospace; }
-  .token-input:focus { outline: none; border-color: #0F6E56; }
-  label { font-size: 0.82rem; color: #666; display: block; margin-bottom: 0.4rem; }
+          width: 20px; height: 20px; border-radius: 50%; background: #0F6E56;
+          color: #fff; font-size: 0.7rem; font-weight: 700; margin-right: 0.4rem; }
+  .field { width: 100%; padding: 0.55rem 0.7rem; border: 1px solid #c8e6dc;
+           border-radius: 8px; font-size: 0.84rem; margin-bottom: 0.6rem; font-family: inherit; }
+  .field:focus { outline: none; border-color: #0F6E56; box-shadow: 0 0 0 2px rgba(15,110,86,0.12); }
+  .field-mono { font-family: monospace; font-size: 0.8rem; }
+  label { font-size: 0.78rem; color: #666; display: block; margin-bottom: 0.25rem; font-weight: 500; }
   .logo { display: inline-block; background: #0F6E56; color: #fff; font-weight: 800;
           font-size: 14px; padding: 4px 10px; border-radius: 6px; letter-spacing: 2px;
           margin-bottom: 0.5rem; }
+  .status-msg { font-size: 0.8rem; padding: 0.5rem 0.7rem; border-radius: 8px;
+                margin-top: 0.6rem; display: none; line-height: 1.4; }
+  .status-msg.ok { display: block; background: #edfaf5; border: 1px solid #0F6E56; color: #085041; }
+  .status-msg.err { display: block; background: #fef0f0; border: 1px solid #A32D2D; color: #791F1F; }
+  .status-msg.load { display: block; background: #f0f7ff; border: 1px solid #185FA5; color: #0c3b6e; }
+  .mp-group { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; margin-bottom: 0.75rem; }
+  .mp-group label { display: inline-flex; align-items: center; gap: 0.25rem;
+                    font-size: 0.8rem; color: #444; cursor: pointer; font-weight: 400; }
+  .mp-group input[type="checkbox"] { accent-color: #0F6E56; }
+
+  /* Shop grid */
+  .shops-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  .shop-card { background: #fff; border: 1px solid #c8e6dc; border-radius: 10px;
+               padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.75rem;
+               transition: box-shadow 0.15s; }
+  .shop-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .shop-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .shop-info { flex: 1; min-width: 0; }
+  .shop-name { font-weight: 600; font-size: 0.9rem; }
+  .shop-mp { font-size: 0.72rem; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .shop-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+  .shop-actions .btn { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
+  .del-btn { background: none; border: 1px solid #ddd; color: #A32D2D; border-radius: 6px;
+             padding: 0.4rem 0.6rem; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
+  .del-btn:hover { background: #fef0f0; border-color: #A32D2D; }
+
+  .section-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.6rem;
+                   display: flex; align-items: center; gap: 0.4rem; }
+  .badge { background: #0F6E56; color: #fff; font-size: 0.65rem; padding: 2px 7px;
+           border-radius: 10px; font-weight: 600; }
+  .footer-link { font-size: 0.8rem; color: #aaa; margin-top: 1.25rem; text-align: center; }
+  .footer-link a { color: #0F6E56; text-decoration: none; }
+  .footer-link a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="logo">PROCARE</div>
-  <h1>Авторизация Allegro</h1>
-  <p class="subtitle">Получение refresh token для магазинов</p>
+  <div class="logo">TEST</div>
+  <h1>Настройка и авторизация</h1>
+  <p class="subtitle">Добавь до 5 магазинов Allegro — всё сохраняется в GitHub автоматически</p>
 
   <div class="notice">
-    <b>Порядок действий:</b><br>
-    <span class="step">1</span> Введи GitHub Token ниже<br>
-    <span class="step">2</span> Войди в браузере в аккаунт Allegro нужного магазина<br>
-    <span class="step">3</span> Нажми кнопку → подтверди авторизацию на Allegro<br>
-    <span class="step">4</span> Токен сохранится автоматически в GitHub Secrets
+    <span class="step">1</span> GitHub Token &nbsp;→&nbsp;
+    <span class="step">2</span> Добавь магазин &nbsp;→&nbsp;
+    <span class="step">3</span> Авторизуй &nbsp;→&nbsp;
+    <span class="step">4</span> Синхронизация на главной
   </div>
 
+  <!-- Step 1: GitHub Token -->
   <div class="card">
-    <h2>GitHub Token</h2>
-    <p>Нужен для автоматического сохранения токена в Secrets. Вводится один раз.</p>
-    <label for="gh_token">Personal Access Token (contents: read+write, secrets: write)</label>
-    <input type="password" id="gh_token" class="token-input" placeholder="github_pat_..." autocomplete="off">
+    <h2><span class="step">1</span> GitHub Token</h2>
+    <p>Personal Access Token с правами <b>repo</b>. Введи один раз.</p>
+    <input type="password" id="gh_token" class="field field-mono" placeholder="github_pat_...">
+    <button class="btn" style="background:#0F6E56" onclick="saveGHToken()">Сохранить</button>
+    <div id="tokenStatus" class="status-msg"></div>
   </div>
 
-  <div id="shopCards"></div>
+  <!-- Step 2: Add Shop -->
+  <div class="card">
+    <h2><span class="step">2</span> Добавить магазин <span id="shopCount" class="badge">0 / 5</span></h2>
+    <p>Данные из <a href="https://apps.developer.allegro.pl/" target="_blank" style="color:#0F6E56">Allegro Developer Console</a> → приложение магазина.</p>
 
-  <p style="font-size:0.8rem;color:#aaa;margin-top:1rem;text-align:center">
-    <a href="index.html" style="color:#0F6E56">← Вернуться на главный дашборд</a>
+    <label for="shopName">Название магазина</label>
+    <input type="text" id="shopName" class="field" placeholder="Например: ProCare">
+
+    <label for="clientId">Client ID</label>
+    <input type="text" id="clientId" class="field field-mono" placeholder="cfdeb63b...">
+
+    <label for="clientSecret">Client Secret</label>
+    <input type="password" id="clientSecret" class="field field-mono" placeholder="Из Developer Console">
+
+    <label>Маркетплейсы</label>
+    <div class="mp-group">
+      <label><input type="checkbox" name="mp" value="allegro-pl" checked> PL</label>
+      <label><input type="checkbox" name="mp" value="allegro-business-pl" checked> Business PL</label>
+      <label><input type="checkbox" name="mp" value="allegro-cz"> CZ</label>
+      <label><input type="checkbox" name="mp" value="allegro-hu"> HU</label>
+      <label><input type="checkbox" name="mp" value="allegro-sk"> SK</label>
+    </div>
+
+    <button class="btn btn-block" style="background:#185FA5" id="addShopBtn" onclick="addShop()">+ Добавить магазин</button>
+    <div id="addStatus" class="status-msg"></div>
+  </div>
+
+  <!-- Step 3: Shop List -->
+  <div id="shopsSection" style="display:none">
+    <div class="section-title">
+      <span class="step">3</span> Магазины — авторизация
+    </div>
+    <div class="shops-grid" id="shopCards"></div>
+  </div>
+
+  <p class="footer-link">
+    <a href="index.html">← Главный дашборд</a> · <a href="https://github.com/sellerup-biz/TEST/actions" target="_blank">GitHub Actions</a>
   </p>
 </div>
 
 <script>
-let REDIRECT_URI = '';
+var CONFIG = null;
+var REPO = '';
+var REDIRECT_URI = '';
+var SODIUM_READY = false;
 
-function authorize(envPrefix, clientId) {
-  const ghToken = document.getElementById('gh_token').value.trim();
-  if (!ghToken) {
-    alert('Введи GitHub Token перед авторизацией!');
-    return;
+var PALETTE = [
+  { color: '#0F6E56', bg: 'rgba(15,110,86,0.18)' },
+  { color: '#BA7517', bg: 'rgba(186,117,23,0.18)' },
+  { color: '#185FA5', bg: 'rgba(24,95,165,0.18)' },
+  { color: '#8B2FC9', bg: 'rgba(139,47,201,0.18)' },
+  { color: '#C4302B', bg: 'rgba(196,48,43,0.18)' }
+];
+
+// ── Init ──
+(async function() {
+  try { await _sodium.ready; SODIUM_READY = true; } catch(e) { console.warn('libsodium:', e); }
+
+  var saved = localStorage.getItem('procare_gh_token');
+  if (saved) {
+    document.getElementById('gh_token').value = saved;
+    setStatus('tokenStatus', 'ok', '✅ Токен загружен из памяти');
   }
-  sessionStorage.setItem('gh_token', ghToken);
-  sessionStorage.setItem('pending_shop', envPrefix);
 
-  const url = `https://allegro.pl/auth/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
-  window.location.href = url;
+  try {
+    var resp = await fetch('config.json?_=' + Date.now());
+    CONFIG = await resp.json();
+    REPO = CONFIG.repo;
+    REDIRECT_URI = CONFIG.redirect_uri;
+    renderShops();
+    updateCount();
+  } catch(e) { console.warn('config.json:', e); }
+})();
+
+function setStatus(id, type, msg) {
+  var el = document.getElementById(id);
+  el.className = 'status-msg ' + type;
+  el.innerHTML = msg;
 }
 
-fetch('config.json').then(r => r.json()).then(cfg => {
-  REDIRECT_URI = cfg.redirect_uri;
-  const container = document.getElementById('shopCards');
-  cfg.shops.forEach(shop => {
-    container.innerHTML += `
-      <div class="card">
-        <h2 style="color:${shop.color}">\u25CF ${shop.name}</h2>
-        <p>Войди в браузере под аккаунтом <b>${shop.name}</b> на Allegro, затем нажми кнопку.</p>
-        <a href="#" class="btn" style="background:${shop.color}" onclick="authorize('${shop.env_prefix}','${shop.client_id}');return false;">
-          Авторизовать ${shop.name} →
-        </a>
-      </div>`;
+function getToken() { return document.getElementById('gh_token').value.trim(); }
+
+function updateCount() {
+  var n = CONFIG ? CONFIG.shops.length : 0;
+  document.getElementById('shopCount').textContent = n + ' / 5';
+  document.getElementById('addShopBtn').disabled = (n >= 5);
+}
+
+// ── Step 1: Save GH Token ──
+async function saveGHToken() {
+  var token = getToken();
+  if (!token) { setStatus('tokenStatus', 'err', '❌ Введи токен'); return; }
+  localStorage.setItem('procare_gh_token', token);
+  setStatus('tokenStatus', 'load', '⏳ Проверяю и сохраняю...');
+  try {
+    await saveSecret('GH_TOKEN', token, token);
+    setStatus('tokenStatus', 'ok', '✅ Сохранён в браузере + GitHub Secrets');
+  } catch(e) {
+    setStatus('tokenStatus', 'ok', '✅ Сохранён в браузере');
+  }
+}
+
+// ── Step 2: Add Shop ──
+async function addShop() {
+  var token = getToken();
+  if (!token) { setStatus('addStatus', 'err', '❌ Сначала введи GitHub Token (шаг 1)'); return; }
+  if (CONFIG.shops.length >= 5) { setStatus('addStatus', 'err', '❌ Максимум 5 магазинов'); return; }
+
+  var name = document.getElementById('shopName').value.trim();
+  var clientId = document.getElementById('clientId').value.trim();
+  var clientSecret = document.getElementById('clientSecret').value.trim();
+  if (!name)         { setStatus('addStatus', 'err', '❌ Введи название'); return; }
+  if (!clientId)     { setStatus('addStatus', 'err', '❌ Введи Client ID'); return; }
+  if (!clientSecret) { setStatus('addStatus', 'err', '❌ Введи Client Secret'); return; }
+
+  var cbs = document.querySelectorAll('input[name="mp"]:checked');
+  var mps = []; cbs.forEach(function(cb) { mps.push(cb.value); });
+  if (!mps.length) { setStatus('addStatus', 'err', '❌ Выбери маркетплейс'); return; }
+
+  var envPrefix = name.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  if (!envPrefix) envPrefix = 'SHOP' + (CONFIG.shops.length + 1);
+
+  for (var i = 0; i < CONFIG.shops.length; i++) {
+    if (CONFIG.shops[i].env_prefix === envPrefix) {
+      setStatus('addStatus', 'err', '❌ Магазин «' + name + '» уже добавлен'); return;
+    }
+  }
+
+  var pal = PALETTE[CONFIG.shops.length % PALETTE.length];
+  var newShop = { name: name, env_prefix: envPrefix, client_id: clientId,
+                  color: pal.color, bg: pal.bg, marketplaces: mps };
+
+  setStatus('addStatus', 'load', '⏳ 1/3 — Сохраняю config.json...');
+  try {
+    CONFIG.shops.push(newShop);
+    await saveConfigToGitHub(token, 'Add shop: ' + name);
+
+    setStatus('addStatus', 'load', '⏳ 2/3 — Сохраняю CLIENT_ID...');
+    await saveSecret('CLIENT_ID_' + envPrefix, clientId, token);
+
+    setStatus('addStatus', 'load', '⏳ 3/3 — Сохраняю CLIENT_SECRET...');
+    await saveSecret('CLIENT_SECRET_' + envPrefix, clientSecret, token);
+
+    await saveSecret('GH_TOKEN', token, token).catch(function(){});
+
+    setStatus('addStatus', 'ok', '✅ Магазин «' + name + '» добавлен! Авторизуй его ниже ↓');
+    document.getElementById('shopName').value = '';
+    document.getElementById('clientId').value = '';
+    document.getElementById('clientSecret').value = '';
+    renderShops();
+    updateCount();
+  } catch(e) {
+    CONFIG.shops.pop();
+    setStatus('addStatus', 'err', '❌ ' + e.message);
+  }
+}
+
+// ── GitHub Contents API — save config.json ──
+async function saveConfigToGitHub(token, message) {
+  var apiUrl = 'https://api.github.com/repos/' + REPO + '/contents/config.json';
+  var headers = { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' };
+
+  var resp = await fetch(apiUrl, { headers: headers });
+  var sha = resp.ok ? (await resp.json()).sha : null;
+
+  var content = JSON.stringify(CONFIG, null, 2) + '\n';
+  var base64 = btoa(unescape(encodeURIComponent(content)));
+  var body = { message: message || 'Update config.json', content: base64 };
+  if (sha) body.sha = sha;
+
+  var put = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
+    body: JSON.stringify(body)
   });
-});
+  if (!put.ok) throw new Error('config.json: HTTP ' + put.status);
+}
+
+// ── GitHub Secrets API — encrypt & save ──
+async function saveSecret(secretName, secretValue, token) {
+  if (!SODIUM_READY) throw new Error('Crypto не загружен — обнови страницу');
+  var sodium = _sodium;
+  var headers = { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' };
+
+  var pkResp = await fetch('https://api.github.com/repos/' + REPO + '/actions/secrets/public-key', { headers: headers });
+  if (!pkResp.ok) throw new Error('Public key: HTTP ' + pkResp.status);
+  var pk = await pkResp.json();
+
+  var binKey = sodium.from_base64(pk.key, sodium.base64_variants.ORIGINAL);
+  var encrypted = sodium.crypto_box_seal(sodium.from_string(secretValue), binKey);
+  var encB64 = sodium.to_base64(encrypted, sodium.base64_variants.ORIGINAL);
+
+  var put = await fetch('https://api.github.com/repos/' + REPO + '/actions/secrets/' + secretName, {
+    method: 'PUT',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
+    body: JSON.stringify({ encrypted_value: encB64, key_id: pk.key_id })
+  });
+  if (put.status !== 201 && put.status !== 204) throw new Error(secretName + ': HTTP ' + put.status);
+}
+
+// ── Render shop cards ──
+function renderShops() {
+  var container = document.getElementById('shopCards');
+  var section = document.getElementById('shopsSection');
+  if (!CONFIG || !CONFIG.shops.length) { section.style.display = 'none'; return; }
+
+  section.style.display = 'block';
+  container.innerHTML = '';
+  CONFIG.shops.forEach(function(shop, idx) {
+    var div = document.createElement('div');
+    div.className = 'shop-card';
+    div.innerHTML =
+      '<div class="shop-dot" style="background:' + shop.color + '"></div>' +
+      '<div class="shop-info">' +
+        '<div class="shop-name">' + shop.name + '</div>' +
+        '<div class="shop-mp">' + shop.marketplaces.join(' · ') + '</div>' +
+      '</div>' +
+      '<div class="shop-actions">' +
+        '<button class="btn" style="background:' + shop.color + '" onclick="authorize(\'' +
+          shop.env_prefix + '\',\'' + shop.client_id + '\')">Авторизовать</button>' +
+        '<button class="del-btn" onclick="removeShop(' + idx + ')" title="Удалить">✕</button>' +
+      '</div>';
+    container.appendChild(div);
+  });
+}
+
+// ── Authorize ──
+function authorize(envPrefix, clientId) {
+  var token = getToken();
+  if (!token) { alert('Введи GitHub Token!'); return; }
+  sessionStorage.setItem('gh_token', token);
+  sessionStorage.setItem('pending_shop', envPrefix);
+  window.location.href = 'https://allegro.pl/auth/oauth/authorize?response_type=code&client_id=' +
+    clientId + '&redirect_uri=' + encodeURIComponent(REDIRECT_URI);
+}
+
+// ── Remove shop ──
+async function removeShop(idx) {
+  var shop = CONFIG.shops[idx];
+  if (!confirm('Удалить «' + shop.name + '»?')) return;
+  var token = getToken();
+  if (!token) { alert('Введи GitHub Token!'); return; }
+  CONFIG.shops.splice(idx, 1);
+  try {
+    await saveConfigToGitHub(token, 'Remove shop: ' + shop.name);
+    renderShops();
+    updateCount();
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
 </script>
 </body>
 </html>
